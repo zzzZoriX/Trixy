@@ -26,7 +26,7 @@ struct parsed_console {
     arguments args;
 
     parsed_console() = delete;
-    parsed_console(const int argc, const char* argv[]);
+    parsed_console(const int argc, char* argv[]);
 
 private:
     bool is_available_command(const std::string_view cmd);
