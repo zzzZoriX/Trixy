@@ -8,7 +8,9 @@ int trixy_main(int argc, char* argv[]) {
     try {
         auto parsed_console = console::parsed_console(argc, argv);
 
-        std::cout << static_cast<int>(parsed_console.command) << " " << parsed_console.args.at("-t") << std::endl;
+        std::cout << USAGE_MSG_TEMPLATE << std::endl;
+
+        switch (parsed_console)
     }
     catch (const console::console_exception& e) {
         std::cerr << e.what() << std::endl;

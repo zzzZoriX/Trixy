@@ -1,7 +1,28 @@
 #include "../include/trixy_console.hpp"
 #include <regex>
+#include <iostream>
 
 using namespace trixy_core::console;
+
+std::string operator=(const command cmd) {
+    if (cmd == command::SET) return "set";
+    if (cmd == command::GET) return "get";
+    if (cmd == command::WHT) return "wht";
+    if (cmd == command::STOP) return "stop";
+    if (cmd == command::GO) return "go";
+
+    return "none";
+}
+
+std::string operator+(const command cmd) {
+    if (cmd == command::SET) return "set";
+    if (cmd == command::GET) return "get";
+    if (cmd == command::WHT) return "wht";
+    if (cmd == command::STOP) return "stop";
+    if (cmd == command::GO) return "go";
+
+    return "none";
+}
 
 parsed_console::parsed_console(const int argc, char* argv[]) {
     if (argc < 2) throw console_exception(
@@ -28,7 +49,7 @@ parsed_console::parsed_console(const int argc, char* argv[]) {
             continue;
         }
 
-        if (i == 2) {
+        if (i == 2 && command != command::GET && command != command::SET && command != command::WHT) {
             if (!is_available_sub_command(arg)) throw console_exception(
                 std::string("Unexpected argument: ") +
                 arg +
@@ -63,7 +84,7 @@ parsed_console::parsed_console(const int argc, char* argv[]) {
     }
 }
 
-bool parsed_console::is_available_command(const std::string_view cmd) {
+bool parsed_console::is_available_command(const std::string_view cmd) const {
     return  cmd == "go" ||
             cmd == "set" ||
             cmd == "get" ||
@@ -71,16 +92,16 @@ bool parsed_console::is_available_command(const std::string_view cmd) {
             cmd == "stop";
 }
 
-bool parsed_console::is_available_sub_command(const std::string_view scmd) {
+bool parsed_console::is_available_sub_command(const std::string_view scmd) const {
     return  scmd == "check" ||
             scmd == "ping";
 }
 
-bool parsed_console::is_breakable_command(const std::string_view cmd) {
+bool parsed_console::is_breakable_command(const std::string_view cmd) const {
     return cmd == "stop";
 }
 
-command parsed_console::define_command_enum(const std::string_view cmd) {
+command parsed_console::define_command_enum(const std::string_view cmd) const {
     if (cmd == "go") return command::GO;
     if (cmd == "set") return command::SET;
     if (cmd == "get") return command::GET;
@@ -92,15 +113,59 @@ command parsed_console::define_command_enum(const std::string_view cmd) {
 
 void parsed_console::load_args_by_sub_command(const std::string_view scmd) {
     if (scmd == "check") {
-        args = {{"-ito", ""}, {"-t", ""}};
+        args = {
+            {"-ito", ""},
+            {"-t", ""}
+        };
+    }
+    else if (scmd == "wht") {
+        args = {
+            {"/", ""},
+            {"?", ""}
+        };
     }
 }
 
-std::string parsed_console::convert_long_to_short(const std::string_view arg) {
+std::string parsed_console::convert_long_to_short(const std::string_view arg) const {
     if (arg == "-ito" || arg == "-t") return arg.data();
 
     if (arg == "--instead-of") return "-ito";
     if (arg == "--timer") return "-t";
 
     return "";
+}
+
+bool parsed_console::is_executable_command() const {
+    return  command == command::GO ||
+            command == command::GET ||
+            command == command::SET ||
+            command == command::STOP;
+}
+
+void trixy_core::console::commands_handler(const parsed_console& console) {
+    switch (console.command) {
+        case command::STOP: // todo
+            break;
+
+        case command::GET:
+            break;
+
+        case command::SET:
+            break;
+
+        case command::WHT:
+            break;
+
+        case command::GO:
+            if (console.sub_command == "check") {
+                // todo
+            }
+            else if (console.sub_command == "ping") {
+                // todo
+            }
+
+            break;
+
+        default: break;
+    }
 }
