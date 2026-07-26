@@ -3,13 +3,12 @@
 #include <vector>
 #include <string_view>
 #include <string>
-#include <fstream>
 #include <regex>
 #include <boost/asio.hpp>
 #include <chrono>
 
 #include "../../../common/trixy_types.hpp"
-#include "../../include/trixy_network.hpp"
+
 
 using namespace trixy_common;
 using namespace boost::asio;
@@ -18,7 +17,8 @@ using namespace boost::asio;
 namespace network::ping {
 
 struct server_ping_result {
-    std::string ip_addr, host;
+    std::string ip_addr, host, err_msg;
+    size_t packets_sent;
     double packet_loss_percent;
     ping_t min_ping, max_ping, avg_ping;
     bool is_reachable;
@@ -46,12 +46,16 @@ using servers_list = std::vector<std::string>;
     std::unique_ptr<ip::icmp::socket> socket;
     std::unique_ptr<ip::icmp::resolver> resolver;
     std::unique_ptr<steady_timer> timer;
+    ip::icmp::endpoint dest;
 
 
     void init_sl(const std::string_view pslf);
 
-    void ping_server(const std::string_view host);
+    server_ping_result ping_server(const std::string_view host);
     void finalize_ping_result();
+
+    void async_send();
+    void async_receive();
 
 public:
 using ping_list = std::vector<server_ping_result>;
@@ -69,5 +73,7 @@ using ping_list = std::vector<server_ping_result>;
 
     ping_list ping_server_list();
 };
+
+bool validate_host(const std::string_view host);
 
 }
