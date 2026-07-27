@@ -82,7 +82,7 @@ using servers_list = std::vector<std::string>;
 public:
 using ping_list = std::vector<server_ping_result>;
 
-    pinger(const size_t timeout, const size_t payload_size, const std::string_view pslf = "../../../../config/pslf.txt") noexcept:
+    pinger(const size_t timeout, const size_t payload_size, const std::string_view pslf = "config/pslf.txt"):
         timeout_ms(timeout), payload_size(payload_size)
     {
         pid = static_cast<uint16_t>(GetCurrentProcessId());

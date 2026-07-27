@@ -4,25 +4,6 @@
 
 using namespace trixy_core::console;
 
-std::string operator=(const command cmd) {
-    if (cmd == command::SET) return "set";
-    if (cmd == command::GET) return "get";
-    if (cmd == command::WHT) return "wht";
-    if (cmd == command::STOP) return "stop";
-    if (cmd == command::GO) return "go";
-
-    return "none";
-}
-
-std::string operator+(const command cmd) {
-    if (cmd == command::SET) return "set";
-    if (cmd == command::GET) return "get";
-    if (cmd == command::WHT) return "wht";
-    if (cmd == command::STOP) return "stop";
-    if (cmd == command::GO) return "go";
-
-    return "none";
-}
 
 parsed_console::parsed_console(const int argc, char* argv[]) {
     if (argc < 2) throw console_exception(

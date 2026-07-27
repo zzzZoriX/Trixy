@@ -12,18 +12,18 @@ using namespace network::ping;
 void pinger::init_sl(const std::string_view pslf) {
     std::ifstream pslfp(pslf.data());
 
-    if (!pslfp.is_open())
-        throw network_exception(
-            std::string("Can't open the ping servers list file\n") + "Create this file if it not exist");
+    if (!pslfp.is_open()) throw network_exception(
+        std::string("Can't open the ping servers list file\n") + "Create this file if it not exist"
+    );
 
     std::string line;
 
-    while (std::getline(pslfp, line))
-        if (validate_host(line)) sl.push_back("https://" + line);
+    while (std::getline(pslfp, line)) if (validate_host(line))
+        sl.push_back("https://" + line);
 }
 
-bool validate_host(const std::string_view host) {
-    return std::regex_match(host.data(), std::regex(R"www[.]([a-zA-Z0-9-_.]+)[.]com"));
+bool network::ping::validate_host(const std::string_view host) {
+    return std::regex_match(host.data(), std::regex("(www[.])?([a-zA-Z0-9-_.]+)[.]com"));
 }
 
 pinger::ping_list pinger::ping_server_list() {
@@ -131,9 +131,8 @@ void pinger::handle_receive(const size_t length) {
     const auto buffer = static_cast<const uint8_t*>(reply_buf.data().data());
 
     if (const size_t ip_header_len = (buffer[0] & 0x0F) * 4; length >= ip_header_len + sizeof(icmp_header)) {
-        if (auto header = reinterpret_cast<const icmp_header*>(buffer + ip_header_len); header->type == 0 && ntohs(header->identifier) == process_id_) {
+        if (auto header = reinterpret_cast<const icmp_header*>(buffer + ip_header_len); header->type == 0 && ntohs(header->id) == pid) {
             const auto rtt = std::chrono::duration_cast<std::chrono::microseconds>(receive_time - send_time).count() / 1000.0;
-            const uint8_t ttl = buffer[8];
 
             rtt_list.push_back(rtt);
             replies_count++;
