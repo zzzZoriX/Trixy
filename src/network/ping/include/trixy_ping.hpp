@@ -27,6 +27,26 @@ struct server_ping_result {
 struct icmp_header {
     ubyte type, code;
     uint16_t checksum, id, seq_num;
+
+    static uint16_t calculate_checksum(const uint8_t* data, size_t length) {
+        uint32_t sum = 0;
+        auto ptr = reinterpret_cast<const uint16_t*>(data);
+
+        while (length > 1) {
+            sum += *ptr++;
+            length -= 2;
+        }
+
+        if (length > 0) {
+            sum += *reinterpret_cast<const uint8_t*>(ptr);
+        }
+
+        while (sum >> 16) {
+            sum = (sum & 0xFFFF) + (sum >> 16);
+        }
+
+        return static_cast<uint16_t>(~sum);
+    }
 };
 
 class pinger {
@@ -46,16 +66,18 @@ using servers_list = std::vector<std::string>;
     std::unique_ptr<ip::icmp::socket> socket;
     std::unique_ptr<ip::icmp::resolver> resolver;
     std::unique_ptr<steady_timer> timer;
-    ip::icmp::endpoint dest;
+    ip::icmp::endpoint dest, sender;
+
+    streambuf reply_buf;
 
 
     void init_sl(const std::string_view pslf);
 
     server_ping_result ping_server(const std::string_view host);
-    void finalize_ping_result();
 
     void async_send();
     void async_receive();
+    void handle_receive(const size_t length);
 
 public:
 using ping_list = std::vector<server_ping_result>;
