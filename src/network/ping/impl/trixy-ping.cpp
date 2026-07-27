@@ -17,9 +17,14 @@ void pinger::init_sl(const std::string_view pslf) {
     );
 
     std::string line;
+    while (std::getline(pslfp, line)) {
+        line.erase(0, line.find_first_not_of(" \t\r\n"));
+        line.erase(line.find_last_not_of(" \t\r\n") + 1);
 
-    while (std::getline(pslfp, line)) if (validate_host(line))
-        sl.push_back("https://" + line);
+        if (!line.empty() /* && validate_host(line) */) {
+            sl.push_back(line);
+        }
+    }
 }
 
 bool network::ping::validate_host(const std::string_view host) {
@@ -57,13 +62,16 @@ server_ping_result pinger::ping_server(const std::string_view host) {
 
         current_result.ip_addr = dest.address().to_string();
 
+        async_send();
+        async_receive();
+
         ioc.run();
     } catch (const std::exception& e) {
         current_result.err_msg = std::string("Network/DNS error: ") + e.what();
         current_result.is_reachable = false;
     }
 
-    current_result.packet_loss_percent = (max_packets - replies_count) / max_packets * 100.0;
+    current_result.packet_loss_percent = static_cast<double>((max_packets - replies_count) / max_packets * 100.0);
 
     if (rtt_list.empty()) {
         current_result.is_reachable = false;
@@ -106,7 +114,10 @@ void pinger::async_send() {
     timer->expires_after(std::chrono::milliseconds(timeout_ms));
     timer->async_wait([this](const boost::system::error_code& ec) {
         if (!ec) {
-            if (curr_seq < max_packets) async_send();
+            if (curr_seq < max_packets) {
+                async_send();
+                async_receive();
+            }
             else socket->close();
         }
     });
